@@ -322,7 +322,7 @@ class _MainPageState extends State<MainPage> {
 
   String getThumbnailUrl(List<String> row) {
   return '';
-　}
+}
 
   // ====================================================
   // 曲数カウント
