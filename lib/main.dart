@@ -1195,25 +1195,22 @@ class _LatestStreamCard
               CrossAxisAlignment.start,
           children: [
 
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: thumbnailUrl.isNotEmpty
-                  ? Image.network(
-                      thumbnailUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder:
-                          (
-                        context,
-                        error,
-                        stackTrace,
-                      ) {
-                        return const
-                            _ThumbnailPlaceholder();
-                      },
-                    )
-                  : const
-                      _ThumbnailPlaceholder(),
-            ),
+           Container(
+  height: 55,
+  width: double.infinity,
+  color: isDark
+      ? const Color(0xFF292230)
+      : const Color(0xFFEDE4F5),
+  child: Center(
+    child: Icon(
+      Icons.play_circle_outline,
+      size: 38,
+      color: isDark
+          ? const Color(0xFFC7A9D8)
+          : const Color(0xFF8061A8),
+    ),
+  ),
+),
 
             Padding(
               padding:
@@ -1230,7 +1227,7 @@ class _LatestStreamCard
 
                         Text(
                           title.isEmpty
-                              ? '歌枠配信'
+                              ? 'クリックで最新の歌枠配信に飛べます'
                               : title,
                           maxLines: 2,
                           overflow:
@@ -1724,6 +1721,7 @@ class _SongsPageState extends State<SongsPage> {
 
   void showDetail(List<String> row) {
     final song = songName(row);
+    bool isFavorite = widget.favorites.contains(song);
 
     showModalBottomSheet(
       context: context,
@@ -1784,25 +1782,26 @@ class _SongsPageState extends State<SongsPage> {
                     ),
                   ),
 
-                  IconButton(
-                    onPressed: () async {
-                      await widget.onToggleFavorite(
-                        song,
-                      );
+  IconButton(
+  onPressed: () async {
+    await widget.onToggleFavorite(song);
 
-                      setState(() {});
-                    },
-                    icon: Icon(
-                      widget.favorites.contains(song)
-                          ? Icons.star
-                          : Icons.star_border,
-                      color:
-                          widget.favorites.contains(song)
-                              ? Colors.amber
-                              : null,
-                      size: 30,
-                    ),
-                  ),
+    if (mounted) {
+      setState(() {});
+    }
+  },
+  icon: Icon(
+    widget.favorites.contains(song)
+        ? Icons.star
+        : Icons.star_border,
+    color: widget.favorites.contains(song)
+        ? Colors.amber
+        : (isDark
+            ? const Color(0xFFB9A8C4)
+            : const Color(0xFF9B72B5)),
+    size: 30,
+  ),
+),
                 ],
               ),
 
@@ -2338,7 +2337,8 @@ class _FavoritesPageState
   }
 
   void showDetail(List<String> row) {
-    final song = songName(row);
+  final song = songName(row);
+  bool isFavorite = widget.favorites.contains(song);
 
     showModalBottomSheet(
       context: context,
