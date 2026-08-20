@@ -202,10 +202,21 @@ class _MainPageState extends State<MainPage> {
 
       final parsedRows = parseCsv(text);
 
-      setState(() {
-        rows = parsedRows;
-        isLoading = false;
-      });
+debugPrint('📊 CSV行数: ${parsedRows.length}');
+
+for (final row in parsedRows) {
+  if (row.length > 4 &&
+      row[4].contains('833800903')) {
+    debugPrint('🎯 833800903の行: $row');
+    debugPrint('🎯 列数: ${row.length}');
+    debugPrint('🎯 I列: ${row.length > 8 ? row[8] : 'なし'}');
+  }
+}
+
+setState(() {
+  rows = parsedRows;
+  isLoading = false;
+});
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -321,12 +332,12 @@ class _MainPageState extends State<MainPage> {
   }
 
  String getThumbnailUrl(List<String> row) {
-  final url = row.length > 8 ? row[8].trim() : '';
+    final url = row.length > 8 ? row[8].trim() : '';
 
-  debugPrint('🖼️ サムネイルURL: $url');
+    debugPrint('🖼️ サムネイルURL: $url');
 
-  return url;
-}
+    return url;
+  }
 
   // ====================================================
   // 曲数カウント
@@ -356,33 +367,57 @@ class _MainPageState extends State<MainPage> {
   // ★ 同じ配信は1件だけ
   // ====================================================
 
-  List<String>? get latestStream {
-    if (rows.length <= 1) {
-      return null;
-    }
-
-    final data = rows.skip(1).toList();
-
-    final seen = <String>{};
-
-    for (final row in data.reversed) {
-      final url = getStreamUrl(row);
-
-      if (url.isEmpty) {
-        continue;
-      }
-
-      if (seen.contains(url)) {
-        continue;
-      }
-
-      seen.add(url);
-
-      return row;
-    }
-
+ List<String>? get latestStream {
+  if (rows.length <= 1) {
     return null;
   }
+
+  final data = rows.skip(1).toList();
+
+  // まず、一番新しい配信URLを探す
+  String latestUrl = '';
+
+  for (final row in data.reversed) {
+    final url = getStreamUrl(row);
+
+    if (url.isNotEmpty) {
+      latestUrl = url;
+      break;
+    }
+  }
+
+  if (latestUrl.isEmpty) {
+    return null;
+  }
+
+  // 同じ配信URLの中から
+  // サムネイルが入っている行を探す
+  for (final row in data.reversed) {
+    final url = getStreamUrl(row);
+
+    if (url != latestUrl) {
+      continue;
+    }
+
+    final thumbnail = getThumbnailUrl(row);
+
+    if (thumbnail.isNotEmpty) {
+      return row;
+    }
+  }
+
+  // サムネイルが見つからなかった場合は
+  // 最新の配信URLの行を返す
+  for (final row in data.reversed) {
+    final url = getStreamUrl(row);
+
+    if (url == latestUrl) {
+      return row;
+    }
+  }
+
+  return null;
+}
 
   // ====================================================
   // TOPページ
