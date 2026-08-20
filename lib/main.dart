@@ -466,35 +466,35 @@ class _MainPageState extends State<MainPage> {
                   const NeverScrollableScrollPhysics(),
               crossAxisSpacing: 8,
               mainAxisSpacing: 8,
-              childAspectRatio: 2.8,
+              childAspectRatio: 3,
               children: const [
 
                 _FeatureCard(
                   icon: Icons.search,
                   title: '曲をさがす',
                   description:
-                      '曲名から歌枠を検索できます',
+                      '曲名から検索',
                 ),
 
                 _FeatureCard(
                   icon: Icons.calendar_month,
                   title: '日付からさがす',
                   description:
-                      '配信日から曲を探せます',
+                      '配信日から検索',
                 ),
 
                 _FeatureCard(
                   icon: Icons.play_circle_outline,
                   title: '歌を聴く',
                   description:
-                      'その場所からワンクリックで再生できます',
+                      'ワンクリック再生',
                 ),
 
                 _FeatureCard(
                   icon: Icons.star_outline,
-                  title: 'お気に入り',
+                  title: 'お気に入り登録',
                   description:
-                      '気になる曲を保存できます',
+                      '気になる曲を保存',
                 ),
               ],
             ),
