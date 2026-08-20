@@ -321,8 +321,8 @@ class _MainPageState extends State<MainPage> {
   }
 
   String getThumbnailUrl(List<String> row) {
-    return row.length > 6 ? row[6].trim() : '';
-  }
+  return '';
+　}
 
   // ====================================================
   // 曲数カウント
