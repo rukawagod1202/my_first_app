@@ -321,7 +321,11 @@ class _MainPageState extends State<MainPage> {
   }
 
  String getThumbnailUrl(List<String> row) {
-  return row.length > 8 ? row[8].trim() : '';
+  final url = row.length > 8 ? row[8].trim() : '';
+
+  debugPrint('🖼️ サムネイルURL: $url');
+
+  return url;
 }
 
   // ====================================================
