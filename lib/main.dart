@@ -320,8 +320,8 @@ class _MainPageState extends State<MainPage> {
     return row.length > 4 ? row[4].trim() : '';
   }
 
-  String getThumbnailUrl(List<String> row) {
-  return '';
+ String getThumbnailUrl(List<String> row) {
+  return row.length > 8 ? row[8].trim() : '';
 }
 
   // ====================================================
