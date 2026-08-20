@@ -43,7 +43,11 @@ class _SongsPageState extends State<SongsPage> {
   String songName(List<String> row) {
     return row.isNotEmpty ? row[0] : '';
   }
-
+  String songReading(List<String> row) {
+    return row.length > 1
+      ? row[1].trim()
+      : '';
+  }
   String reading(List<String> row) {
     return row.length > 1 ? row[1] : '';
   }

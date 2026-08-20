@@ -1602,19 +1602,15 @@ class _LinkButton
 // 曲一覧
 // ======================================================
 
-class SongsPage
-    extends StatefulWidget {
-
+class SongsPage extends StatefulWidget {
   final List<List<String>> rows;
   final Set<String> favorites;
 
-  final Future<void> Function(
-    String songName,
-  ) onToggleFavorite;
+  final Future<void> Function(String songName)
+      onToggleFavorite;
 
-  final Future<void> Function(
-    String url,
-  ) onOpenUrl;
+  final Future<void> Function(String url)
+      onOpenUrl;
 
   const SongsPage({
     super.key,
@@ -1625,69 +1621,62 @@ class SongsPage
   });
 
   @override
-  State<SongsPage> createState() =>
-      _SongsPageState();
+  State<SongsPage> createState() => _SongsPageState();
 }
 
-class _SongsPageState
-    extends State<SongsPage> {
-
-  final TextEditingController
-      searchController =
+class _SongsPageState extends State<SongsPage> {
+  final TextEditingController searchController =
       TextEditingController();
 
-  final ScrollController
-      scrollController =
+  final ScrollController scrollController =
       ScrollController();
 
   @override
   void initState() {
     super.initState();
 
-    searchController.addListener(
-      () {
-        setState(() {});
-      },
-    );
+    searchController.addListener(() {
+      setState(() {});
+    });
   }
 
+  // ====================================================
+  // 曲名
+  // A列：画面に表示する名前
+  // ====================================================
+
   String songName(List<String> row) {
-    return row.isNotEmpty
-        ? row[0].trim()
-        : '';
+    return row.isNotEmpty ? row[0].trim() : '';
+  }
+
+  // ====================================================
+  // 検索用よみがな
+  // B列：検索にだけ使用
+  // ※画面には表示しない
+  // ====================================================
+
+  String songReading(List<String> row) {
+    return row.length > 1 ? row[1].trim() : '';
   }
 
   String date(List<String> row) {
-    return row.length > 2
-        ? row[2].trim()
-        : '';
+    return row.length > 2 ? row[2].trim() : '';
   }
 
-  String streamTitle(
-      List<String> row) {
-    return row.length > 3
-        ? row[3].trim()
-        : '';
+  String streamTitle(List<String> row) {
+    return row.length > 3 ? row[3].trim() : '';
   }
 
-  String streamUrl(
-      List<String> row) {
-    return row.length > 4
-        ? row[4].trim()
-        : '';
+  String streamUrl(List<String> row) {
+    return row.length > 4 ? row[4].trim() : '';
   }
 
-  String timestamp(
-      List<String> row) {
-    return row.length > 5
-        ? row[5].trim()
-        : '';
+  String timestamp(List<String> row) {
+    return row.length > 5 ? row[5].trim() : '';
   }
 
   String playUrl(List<String> row) {
-    return row.length > 7
-        ? row[7].trim()
-        : '';
+    return row.length > 7 ? row[7].trim() : '';
   }
 
   // ====================================================
@@ -1701,62 +1690,41 @@ class _SongsPageState
       context: context,
       isScrollControlled: true,
       backgroundColor:
-          Theme.of(context)
-              .scaffoldBackgroundColor,
-      shape:
-          const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(
+          Theme.of(context).scaffoldBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
           top: Radius.circular(28),
         ),
       ),
-
       builder: (context) {
         final isDark =
             Theme.of(context).brightness ==
                 Brightness.dark;
 
         return Padding(
-          padding:
-              const EdgeInsets.all(28),
-
+          padding: const EdgeInsets.all(28),
           child: Column(
-            mainAxisSize:
-                MainAxisSize.min,
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment:
                 CrossAxisAlignment.start,
-
             children: [
-
               Row(
                 children: [
-
                   Container(
                     width: 48,
                     height: 48,
-                    decoration:
-                        BoxDecoration(
+                    decoration: BoxDecoration(
                       color: isDark
-                          ? const Color(
-                              0xFF493556,
-                            )
-                          : const Color(
-                              0xFFE8DDF2,
-                            ),
+                          ? const Color(0xFF493556)
+                          : const Color(0xFFE8DDF2),
                       borderRadius:
-                          BorderRadius.circular(
-                        16,
-                      ),
+                          BorderRadius.circular(16),
                     ),
                     child: Icon(
                       Icons.music_note,
                       color: isDark
-                          ? const Color(
-                              0xFFEBDDF2,
-                            )
-                          : const Color(
-                              0xFF76539B,
-                            ),
+                          ? const Color(0xFFEBDDF2)
+                          : const Color(0xFF76539B),
                     ),
                   ),
 
@@ -1766,39 +1734,33 @@ class _SongsPageState
                     child: Text(
                       song,
                       style:
-                          GoogleFonts
-                              .zenMaruGothic(
+                          GoogleFonts.zenMaruGothic(
                         fontSize: 25,
                         fontWeight:
                             FontWeight.bold,
                         color: isDark
                             ? Colors.white
-                            : const Color(
-                                0xFF76539B,
-                              ),
+                            : const Color(0xFF76539B),
                       ),
                     ),
                   ),
 
                   IconButton(
                     onPressed: () async {
-                      await widget
-                          .onToggleFavorite(
+                      await widget.onToggleFavorite(
                         song,
                       );
 
                       setState(() {});
                     },
-
                     icon: Icon(
-                      widget.favorites
-                              .contains(song)
+                      widget.favorites.contains(song)
                           ? Icons.star
                           : Icons.star_border,
-                      color: widget.favorites
-                              .contains(song)
-                          ? Colors.amber
-                          : null,
+                      color:
+                          widget.favorites.contains(song)
+                              ? Colors.amber
+                              : null,
                       size: 30,
                     ),
                   ),
@@ -1809,8 +1771,7 @@ class _SongsPageState
 
               if (date(row).isNotEmpty)
                 _InfoRow(
-                  icon:
-                      Icons.calendar_month,
+                  icon: Icons.calendar_month,
                   text: date(row),
                 ),
 
@@ -1830,46 +1791,37 @@ class _SongsPageState
 
               SizedBox(
                 width: double.infinity,
-                child:
-                    ElevatedButton.icon(
+                child: ElevatedButton.icon(
                   onPressed:
                       playUrl(row).isEmpty
                           ? null
-                          : () =>
-                              widget.onOpenUrl(
-                            playUrl(row),
-                          ),
+                          : () => widget.onOpenUrl(
+                                playUrl(row),
+                              ),
                   icon: const Icon(
                     Icons.play_arrow_rounded,
                   ),
                   label: Text(
                     'この曲を聴く',
                     style:
-                        GoogleFonts
-                            .zenMaruGothic(
-                      fontWeight:
-                          FontWeight.bold,
+                        GoogleFonts.zenMaruGothic(
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   style:
                       ElevatedButton.styleFrom(
                     backgroundColor:
-                        const Color(
-                      0xFF9B72B5,
-                    ),
+                        const Color(0xFF9B72B5),
                     foregroundColor:
                         Colors.white,
                     padding:
-                        const EdgeInsets
-                            .symmetric(
+                        const EdgeInsets.symmetric(
                       vertical: 16,
                     ),
                     shape:
                         RoundedRectangleBorder(
                       borderRadius:
-                          BorderRadius.circular(
-                        16,
-                      ),
+                          BorderRadius.circular(16),
                     ),
                   ),
                 ),
@@ -1880,8 +1832,7 @@ class _SongsPageState
 
                 SizedBox(
                   width: double.infinity,
-                  child:
-                      OutlinedButton.icon(
+                  child: OutlinedButton.icon(
                     onPressed: () =>
                         widget.onOpenUrl(
                       streamUrl(row),
@@ -1901,23 +1852,16 @@ class _SongsPageState
                     style:
                         OutlinedButton.styleFrom(
                       foregroundColor: isDark
-                          ? const Color(
-                              0xFFEBDDF2,
-                            )
-                          : const Color(
-                              0xFF76539B,
-                            ),
+                          ? const Color(0xFFEBDDF2)
+                          : const Color(0xFF76539B),
                       padding:
-                          const EdgeInsets
-                              .symmetric(
+                          const EdgeInsets.symmetric(
                         vertical: 14,
                       ),
                       shape:
                           RoundedRectangleBorder(
                         borderRadius:
-                            BorderRadius.circular(
-                          16,
-                        ),
+                            BorderRadius.circular(16),
                       ),
                     ),
                   ),
@@ -1942,10 +1886,20 @@ class _SongsPageState
         Theme.of(context).brightness ==
             Brightness.dark;
 
+    // 検索文字
     final searchText =
         searchController.text
             .trim()
             .toLowerCase();
+
+    // ==================================================
+    // 検索
+    //
+    // A列「曲名」
+    // B列「ひらがな」
+    //
+    // どちらでも検索できる
+    // ==================================================
 
     final data =
         widget.rows.length <= 1
@@ -1958,9 +1912,16 @@ class _SongsPageState
                         songName(row)
                             .toLowerCase();
 
+                    final reading =
+                        songReading(row)
+                            .toLowerCase();
+
                     return song.contains(
-                      searchText,
-                    );
+                          searchText,
+                        ) ||
+                        reading.contains(
+                          searchText,
+                        );
                   },
                 )
                 .toList();
@@ -1968,7 +1929,6 @@ class _SongsPageState
     return SafeArea(
       child: Column(
         children: [
-
           Padding(
             padding:
                 const EdgeInsets.fromLTRB(
@@ -1977,26 +1937,20 @@ class _SongsPageState
               20,
               10,
             ),
-
             child: Column(
               crossAxisAlignment:
                   CrossAxisAlignment.start,
-
               children: [
-
                 Text(
                   '曲をさがす',
                   style:
-                      GoogleFonts
-                          .zenMaruGothic(
+                      GoogleFonts.zenMaruGothic(
                     fontSize: 30,
                     fontWeight:
                         FontWeight.bold,
                     color: isDark
                         ? Colors.white
-                        : const Color(
-                            0xFF654680,
-                          ),
+                        : const Color(0xFF654680),
                   ),
                 ),
 
@@ -2007,13 +1961,10 @@ class _SongsPageState
                       searchController,
 
                   style:
-                      GoogleFonts
-                          .zenMaruGothic(
+                      GoogleFonts.zenMaruGothic(
                     color: isDark
                         ? Colors.white
-                        : const Color(
-                            0xFF654680,
-                          ),
+                        : const Color(0xFF654680),
                   ),
 
                   decoration:
@@ -2025,12 +1976,8 @@ class _SongsPageState
                         GoogleFonts
                             .zenMaruGothic(
                       color: isDark
-                          ? const Color(
-                              0xFFC5B8CC,
-                            )
-                          : const Color(
-                              0xFF887494,
-                            ),
+                          ? const Color(0xFFC5B8CC)
+                          : const Color(0xFF887494),
                     ),
 
                     prefixIcon:
@@ -2114,7 +2061,6 @@ class _SongsPageState
                         trackVisibility:
                             true,
                         interactive: true,
-
                         child:
                             ListView.builder(
                           controller:
@@ -2137,16 +2083,15 @@ class _SongsPageState
                             context,
                             index,
                           ) {
-
                             final row =
                                 data[index];
 
+                            // ★ 表示するのはA列だけ
                             final song =
                                 songName(row);
 
                             final favorite =
-                                widget
-                                    .favorites
+                                widget.favorites
                                     .contains(
                                   song,
                                 );
@@ -2213,6 +2158,8 @@ class _SongsPageState
                                   ),
                                 ),
 
+                                // ★ 画面には曲名だけ
+                                // ★ B列のひらがなは表示しない
                                 title:
                                     Text(
                                   song,
