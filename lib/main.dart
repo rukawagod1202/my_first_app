@@ -487,14 +487,44 @@ setState(() {
 
             const SizedBox(height: 22),
 
-            // =================================================
-            // このサイトでできること
-            // =================================================
+// =================================================
+// 登録曲数・総歌唱回数
+// =================================================
 
-            const _SectionTitle(
-              icon: Icons.music_note,
-              title: 'このサイトでできること',
-            ),
+Row(
+  children: [
+
+    Expanded(
+      child: _TopInfoCard(
+        icon: Icons.music_note,
+        title: '登録曲数',
+        value: '${counts.length}曲',
+      ),
+    ),
+
+    const SizedBox(width: 10),
+
+    Expanded(
+      child: _TopInfoCard(
+        icon: Icons.repeat,
+        title: '総歌唱回数',
+        value: '${rows.length > 1 ? rows.length - 1 : 0}回',
+      ),
+    ),
+
+  ],
+),
+
+const SizedBox(height: 28),
+
+// =================================================
+// このサイトでできること
+// =================================================
+
+const _SectionTitle(
+  icon: Icons.music_note,
+  title: 'このサイトでできること',
+),
 
             const SizedBox(height: 10),
 
