@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -23,6 +24,8 @@ class _CalendarPageState extends State<CalendarPage> {
 
   DateTime? selectedDate;
 
+  final List<int> availableYears = [2025, 2026];
+
   final Set<String> holidays = {
     '2026-01-01',
     '2026-01-12',
@@ -43,6 +46,13 @@ class _CalendarPageState extends State<CalendarPage> {
     '2026-11-03',
     '2026-11-23',
   };
+
+  void selectYear(int year) {
+    setState(() {
+      displayedMonth = DateTime(year, 1);
+      selectedDate = null;
+    });
+  }
 
   String dateKey(DateTime date) {
     return '${date.year}-'
@@ -279,50 +289,119 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                   child: Column(
                     children: [
-                      // 月移動
-                      Row(
+                      // ==========================
+                      // 年・月移動
+                      // ==========================
+
+                      Column(
                         children: [
-                          IconButton(
-                            visualDensity:
-                                VisualDensity.compact,
-                            onPressed: previousMonth,
-                            icon: const Icon(
-                              Icons.chevron_left_rounded,
-                            ),
-                            color:
-                                const Color(0xFF8061A8),
+                          // 年切り替え
+                          Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.center,
+                            children:
+                                availableYears.map((year) {
+                              final isSelectedYear =
+                                  displayedMonth.year == year;
+
+                              return Padding(
+                                padding:
+                                    const EdgeInsets
+                                        .symmetric(
+                                  horizontal: 4,
+                                ),
+                                child: ChoiceChip(
+                                  label: Text(
+                                    '${year}年',
+                                    style: softText(
+                                      size: 12,
+                                      weight:
+                                          FontWeight.bold,
+                                      color:
+                                          isSelectedYear
+                                              ? Colors.white
+                                              : const Color(
+                                                  0xFF8061A8,
+                                                ),
+                                    ),
+                                  ),
+                                  selected:
+                                      isSelectedYear,
+                                  selectedColor:
+                                      const Color(
+                                    0xFF8061A8,
+                                  ),
+                                  backgroundColor:
+                                      isDark
+                                          ? const Color(
+                                              0xFF493B50,
+                                            )
+                                          : const Color(
+                                              0xFFF0E8F6,
+                                            ),
+                                  side: BorderSide.none,
+                                  onSelected: (_) {
+                                    selectYear(year);
+                                  },
+                                ),
+                              );
+                            }).toList(),
                           ),
 
-                          Expanded(
-                            child: Center(
-                              child: Text(
-                                '${displayedMonth.year}年 '
-                                '${displayedMonth.month}月',
-                                style: softText(
-                                  size: 19,
-                                  weight:
-                                      FontWeight.w900,
-                                  color:
-                                      mainTextColor,
+                          const SizedBox(height: 6),
+
+                          // 月移動
+                          Row(
+                            children: [
+                              IconButton(
+                                visualDensity:
+                                    VisualDensity.compact,
+                                onPressed:
+                                    previousMonth,
+                                icon: const Icon(
+                                  Icons
+                                      .chevron_left_rounded,
+                                ),
+                                color:
+                                    const Color(0xFF8061A8),
+                              ),
+
+                              Expanded(
+                                child: Center(
+                                  child: Text(
+                                    '${displayedMonth.month}月',
+                                    style: softText(
+                                      size: 19,
+                                      weight:
+                                          FontWeight.w900,
+                                      color:
+                                          mainTextColor,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
 
-                          IconButton(
-                            visualDensity:
-                                VisualDensity.compact,
-                            onPressed: nextMonth,
-                            icon: const Icon(
-                              Icons.chevron_right_rounded,
-                            ),
-                            color:
-                                const Color(0xFF8061A8),
+                              IconButton(
+                                visualDensity:
+                                    VisualDensity.compact,
+                                onPressed:
+                                    nextMonth,
+                                icon: const Icon(
+                                  Icons
+                                      .chevron_right_rounded,
+                                ),
+                                color:
+                                    const Color(0xFF8061A8),
+                              ),
+                            ],
                           ),
                         ],
                       ),
 
+                      // ==========================
                       // 今日ボタン
+                      // ==========================
+
                       Align(
                         alignment:
                             Alignment.centerRight,
@@ -371,7 +450,10 @@ class _CalendarPageState extends State<CalendarPage> {
 
                       const SizedBox(height: 8),
 
+                      // ==========================
                       // 曜日
+                      // ==========================
+
                       Row(
                         children: [
                           _Weekday(
@@ -394,7 +476,10 @@ class _CalendarPageState extends State<CalendarPage> {
 
                       const SizedBox(height: 4),
 
+                      // ==========================
                       // 日付
+                      // ==========================
+
                       GridView.builder(
                         shrinkWrap: true,
                         physics:
@@ -545,7 +630,10 @@ class _CalendarPageState extends State<CalendarPage> {
 
                       const SizedBox(height: 10),
 
+                      // ==========================
                       // 凡例
+                      // ==========================
+
                       Wrap(
                         alignment:
                             WrapAlignment.center,

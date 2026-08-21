@@ -506,121 +506,53 @@ setState(() {
               crossAxisSpacing: 8,
               mainAxisSpacing: 8,
               childAspectRatio: 3,
-              children: const [
+              children:  [
 
                 _FeatureCard(
-                  icon: Icons.search,
-                  title: '曲をさがす',
-                  description:
-                      '曲名から検索',
-                ),
+  icon: Icons.search,
+  title: '曲をさがす',
+  description: '曲名から検索',
+  onTap: () {
+    setState(() {
+      selectedIndex = 1;
+    });
+  },
+),
 
-                _FeatureCard(
-                  icon: Icons.calendar_month,
-                  title: '日付からさがす',
-                  description:
-                      '配信日から検索',
-                ),
+_FeatureCard(
+  icon: Icons.calendar_month,
+  title: '日付からさがす',
+  description: '配信日から検索',
+  onTap: () {
+    setState(() {
+      selectedIndex = 2;
+    });
+  },
+),
 
-                _FeatureCard(
-                  icon: Icons.play_circle_outline,
-                  title: '歌を聴く',
-                  description:
-                      'ワンクリック再生',
-                ),
+_FeatureCard(
+  icon: Icons.play_circle_outline,
+  title: '歌を聴く',
+  description: 'ワンクリック再生',
+  onTap: () {
+    setState(() {
+      selectedIndex = 1;
+    });
+  },
+),
 
-                _FeatureCard(
-                  icon: Icons.star_outline,
-                  title: 'お気に入り登録',
-                  description:
-                      '気になる曲を保存',
-                ),
-              ],
-            ),
+_FeatureCard(
+  icon: Icons.star_outline,
+  title: 'お気に入り登録',
+  description: '気になる曲を保存',
+  onTap: () {
+    setState(() {
+      selectedIndex = 3;
+    });
+  },
+),
 
-            const SizedBox(height: 24),
-
-            // =================================================
-            // 曲をさがす
-            // =================================================
-
-            const _SectionTitle(
-              icon: Icons.search,
-              title: '曲をさがす',
-            ),
-
-            const SizedBox(height: 12),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  setState(() {
-                    selectedIndex = 1;
-                  });
-                },
-                icon: const Icon(
-                  Icons.search,
-                  size: 23,
-                ),
-                label: Text(
-                  '曲名を検索する',
-                  style: GoogleFonts.zenMaruGothic(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      const Color(0xFF8061A8),
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(
-                    vertical: 16,
-                  ),
-                  elevation: 0,
-                  shape:
-                      RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(18),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // =================================================
-            // 情報カード
-            // =================================================
-
-            Row(
-              children: [
-
-                Expanded(
-                  child: _TopInfoCard(
-                    icon: Icons.music_note,
-                    title: '登録曲数',
-                    value: '${counts.length}',
-                  ),
-                ),
-
-                const SizedBox(width: 10),
-
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedIndex = 3;
-                      });
-                    },
-                    child: _TopInfoCard(
-                      icon: Icons.star,
-                      title: 'お気に入り',
-                      value: '${favorites.length}',
-                    ),
-                  ),
-                ),
+// ★ ここでGridViewを閉じる
               ],
             ),
 
@@ -990,101 +922,98 @@ class _FeatureCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String description;
+  final VoidCallback onTap;
 
   const _FeatureCard({
     required this.icon,
     required this.title,
     required this.description,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark =
-        Theme.of(context).brightness ==
-            Brightness.dark;
+        Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 9,
-        vertical: 7,
-      ),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius:
-            BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark
-              ? const Color(0xFF493B50)
-              : const Color(0xFFE3D5EC),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 9,
+            vertical: 7,
+          ),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isDark
+                  ? const Color(0xFF493B50)
+                  : const Color(0xFFE3D5EC),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF493556)
+                      : const Color(0xFFEDE4F5),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(
+                  icon,
+                  color: isDark
+                      ? const Color(0xFFEBDDF2)
+                      : const Color(0xFF8061A8),
+                  size: 17,
+                ),
+              ),
+
+              const SizedBox(width: 7),
+
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.zenMaruGothic(
+                        fontWeight: FontWeight.bold,
+                        color: isDark
+                            ? Colors.white
+                            : const Color(0xFF654680),
+                        fontSize: 15,
+                      ),
+                    ),
+
+                    const SizedBox(height: 1),
+
+                    Text(
+                      description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.zenMaruGothic(
+                        fontSize: 12,
+                        color: isDark
+                            ? const Color(0xFFD8D0DC)
+                            : const Color(0xFF887494),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-
-          Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xFF493556)
-                  : const Color(0xFFEDE4F5),
-              borderRadius:
-                  BorderRadius.circular(9),
-            ),
-            child: Icon(
-              icon,
-              color: isDark
-                  ? const Color(0xFFEBDDF2)
-                  : const Color(0xFF8061A8),
-              size: 17,
-            ),
-          ),
-
-          const SizedBox(width: 7),
-
-          Expanded(
-            child: Column(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-
-                Text(
-                  title,
-                  maxLines: 1,
-                  overflow:
-                      TextOverflow.ellipsis,
-                  style:
-                      GoogleFonts.zenMaruGothic(
-                    fontWeight:
-                        FontWeight.bold,
-                    color: isDark
-                        ? Colors.white
-                        : const Color(0xFF654680),
-                    fontSize: 15,
-                  ),
-                ),
-
-                const SizedBox(height: 1),
-
-                Text(
-                  description,
-                  maxLines: 1,
-                  overflow:
-                      TextOverflow.ellipsis,
-                  style:
-                      GoogleFonts.zenMaruGothic(
-                    fontSize: 12,
-                    color: isDark
-                        ? const Color(0xFFD8D0DC)
-                        : const Color(0xFF887494),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
