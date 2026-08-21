@@ -493,7 +493,6 @@ setState(() {
 
 Row(
   children: [
-
     Expanded(
       child: _TopInfoCard(
         icon: Icons.music_note,
@@ -506,12 +505,11 @@ Row(
 
     Expanded(
       child: _TopInfoCard(
-        icon: Icons.repeat,
+        icon: Icons.mic,
         title: '総歌唱回数',
         value: '${rows.length > 1 ? rows.length - 1 : 0}回',
       ),
     ),
-
   ],
 ),
 
