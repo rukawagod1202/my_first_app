@@ -40,247 +40,267 @@ class _SongsPageState extends State<SongsPage> {
     });
   }
 
+  // ====================================================
+  // 各列
+  // ====================================================
+
   String songName(List<String> row) {
-    return row.isNotEmpty ? row[0] : '';
+    return row.isNotEmpty ? row[0].trim() : '';
   }
+
   String songReading(List<String> row) {
-    return row.length > 1
-      ? row[1].trim()
-      : '';
-  }
-  String reading(List<String> row) {
-    return row.length > 1 ? row[1] : '';
+    return row.length > 1 ? row[1].trim() : '';
   }
 
   String date(List<String> row) {
-    return row.length > 2 ? row[2] : '';
+    return row.length > 2 ? row[2].trim() : '';
   }
 
   String streamTitle(List<String> row) {
-    return row.length > 3 ? row[3] : '';
+    return row.length > 3 ? row[3].trim() : '';
   }
 
   String streamUrl(List<String> row) {
-    return row.length > 4 ? row[4] : '';
+    return row.length > 4 ? row[4].trim() : '';
   }
 
   String timestamp(List<String> row) {
-    return row.length > 5 ? row[5] : '';
+    return row.length > 5 ? row[5].trim() : '';
   }
 
   String playUrl(List<String> row) {
-    return row.length > 7 ? row[7] : '';
+    return row.length > 7 ? row[7].trim() : '';
   }
 
-  void showSongDetail(List<String> row) {
-    final song = songName(row);
+  // ====================================================
+  // 同じ曲かどうか判定するための名前
+  // ====================================================
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor:
-          Theme.of(context).scaffoldBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(28),
-        ),
+  String normalizeSongName(String value) {
+    return value
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), '');
+  }
+
+  // ====================================================
+  // 曲ごとにまとめる
+  // 同じ曲は1つにして、歌唱履歴を全部まとめる
+  // ====================================================
+
+  Map<String, List<List<String>>> groupSongs() {
+    final grouped =
+        <String, List<List<String>>>{};
+
+    if (widget.rows.length <= 1) {
+      return grouped;
+    }
+
+    for (final row in widget.rows.skip(1)) {
+      final song = songName(row);
+
+      if (song.isEmpty) continue;
+
+      // 表記ゆれをなくして比較
+      final key = normalizeSongName(song);
+
+      grouped.putIfAbsent(key, () => []);
+      grouped[key]!.add(row);
+    }
+
+    return grouped;
+  }
+
+  // ====================================================
+// 曲の詳細・歌唱履歴
+// ====================================================
+
+void showSongDetail(
+  String song,
+  List<List<String>> songRows,
+) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor:
+        Theme.of(context).scaffoldBackgroundColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(28),
       ),
-      builder: (context) {
-        final isFavorite =
-            widget.favorites.contains(song);
+    ),
+    builder: (context) {
+      final isDark =
+          Theme.of(context).brightness ==
+              Brightness.dark;
 
-        final isDark =
-            Theme.of(context).brightness ==
-                Brightness.dark;
+      return DraggableScrollableSheet(
+        initialChildSize: 0.75,
+        minChildSize: 0.45,
+        maxChildSize: 0.92,
+        expand: false,
+        builder: (
+          context,
+          scrollController,
+        ) {
+          final isFavorite =
+              widget.favorites.contains(song);
 
-        return Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF45384D)
-                          : const Color(0xFFE9DDF1),
-                      borderRadius:
-                          BorderRadius.circular(15),
-                    ),
-                    child: const Icon(
-                      Icons.music_note,
-                      color: Color(0xFF8061A8),
-                    ),
-                  ),
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(
+              28,
+              20,
+              28,
+              20,
+            ),
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
 
-                  const SizedBox(width: 14),
+                // ==============================================
+                // ヘッダー
+                // ==============================================
 
-                  Expanded(
-                    child: Text(
-                      song,
-                      style:
-                          GoogleFonts.zenMaruGothic(
-                        fontSize: 24,
-                        fontWeight:
-                            FontWeight.w800,
+                Row(
+                  children: [
+
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.white
-                            : const Color(
-                                0xFF654680,
-                              ),
+                            ? const Color(0xFF493556)
+                            : const Color(0xFFE8DDF2),
+                        borderRadius:
+                            BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        Icons.music_note,
+                        color: isDark
+                            ? const Color(0xFFEBDDF2)
+                            : const Color(0xFF8061A8),
                       ),
                     ),
-                  ),
 
-                  IconButton(
-                    onPressed: () async {
-                      await widget
-                          .onToggleFavorite(song);
+                    const SizedBox(width: 12),
 
-                      setState(() {});
-                    },
-                    icon: Icon(
-                      isFavorite
-                          ? Icons.star
-                          : Icons.star_border,
-                      color: isFavorite
-                          ? Colors.amber
-                          : const Color(
-                              0xFF8061A8,
-                            ),
-                      size: 30,
+                    Expanded(
+                      child: Text(
+                        song,
+                        maxLines: 1,
+                        overflow:
+                            TextOverflow.ellipsis,
+                        style:
+                            GoogleFonts.zenMaruGothic(
+                          fontSize: 22,
+                          fontWeight:
+                              FontWeight.w800,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(
+                                  0xFF654680,
+                                ),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              ),
 
-              const SizedBox(height: 24),
+                    IconButton(
+                      onPressed: () async {
+                        await widget
+                            .onToggleFavorite(song);
 
-              if (date(row).isNotEmpty)
-                _InfoRow(
-                  icon: Icons.calendar_month,
-                  text: date(row),
-                ),
+                        if (mounted) {
+                          setState(() {});
+                        }
 
-              if (streamTitle(row).isNotEmpty)
-                _InfoRow(
-                  icon: Icons.live_tv,
-                  text: streamTitle(row),
-                ),
-
-              if (timestamp(row).isNotEmpty)
-                _InfoRow(
-                  icon: Icons.access_time,
-                  text: timestamp(row),
-                ),
-
-              const SizedBox(height: 20),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed:
-                      playUrl(row).isEmpty
-                          ? null
-                          : () {
-                              widget.onOpenUrl(
-                                playUrl(row),
-                              );
-                            },
-                  icon: const Icon(
-                    Icons.play_arrow_rounded,
-                  ),
-                  label: Text(
-                    'この曲を聴く',
-                    style:
-                        GoogleFonts.zenMaruGothic(
-                      fontSize: 16,
-                      fontWeight:
-                          FontWeight.w700,
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      },
+                      icon: Icon(
+                        isFavorite
+                            ? Icons.star
+                            : Icons.star_border,
+                        color: isFavorite
+                            ? Colors.amber
+                            : (isDark
+                                ? const Color(
+                                    0xFFB9A8C4,
+                                  )
+                                : const Color(
+                                    0xFF9B72B5,
+                                  )),
+                        size: 28,
+                      ),
                     ),
-                  ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // ==============================================
+                // 歌唱回数
+                // ==============================================
+
+                Text(
+                  '${songRows.length}回歌われています',
                   style:
-                      ElevatedButton.styleFrom(
-                    backgroundColor:
-                        const Color(0xFF8061A8),
-                    foregroundColor:
-                        Colors.white,
-                    padding:
-                        const EdgeInsets.symmetric(
-                      vertical: 16,
-                    ),
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(
-                        16,
-                      ),
-                    ),
+                      GoogleFonts.zenMaruGothic(
+                    fontSize: 13,
+                    fontWeight:
+                        FontWeight.w700,
+                    color: isDark
+                        ? const Color(0xFFD8D0DC)
+                        : const Color(0xFF887494),
                   ),
                 ),
-              ),
 
-              if (streamUrl(row).isNotEmpty) ...[
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
 
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      widget.onOpenUrl(
-                        streamUrl(row),
+                // ==============================================
+                // 歌唱履歴
+                // ==============================================
+
+                Expanded(
+                  child: ListView.builder(
+                    controller:
+                        scrollController,
+                    itemCount:
+                        songRows.length,
+                    itemBuilder:
+                        (context, index) {
+                      final row =
+                          songRows[index];
+
+                      return _CompactSongHistoryCard(
+                        date: date(row),
+                        streamTitle:
+                            streamTitle(row),
+                        timestamp:
+                            timestamp(row),
+                        playUrl:
+                            playUrl(row),
+                        streamUrl:
+                            streamUrl(row),
+                        onOpenUrl:
+                            widget.onOpenUrl,
                       );
                     },
-                    icon: const Icon(
-                      Icons.open_in_new,
-                    ),
-                    label: Text(
-                      '配信を見る',
-                      style:
-                          GoogleFonts.zenMaruGothic(
-                        fontWeight:
-                            FontWeight.w600,
-                      ),
-                    ),
-                    style:
-                        OutlinedButton.styleFrom(
-                      foregroundColor:
-                          const Color(
-                        0xFF8061A8,
-                      ),
-                      side: const BorderSide(
-                        color: Color(
-                          0xFFD5C4E4,
-                        ),
-                      ),
-                      padding:
-                          const EdgeInsets.symmetric(
-                        vertical: 14,
-                      ),
-                      shape:
-                          RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(
-                          16,
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ],
+            ),
+          );
+        },
+      );
+    },
+  );
+}
 
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  // ====================================================
+  // 画面
+  // ====================================================
 
   @override
   Widget build(BuildContext context) {
@@ -291,36 +311,58 @@ class _SongsPageState extends State<SongsPage> {
         Theme.of(context).brightness ==
             Brightness.dark;
 
-    final songs =
-        widget.rows.length <= 1
-            ? <List<String>>[]
-            : widget.rows
-                .skip(1)
-                .where((row) {
-                  final name =
-                      songName(row).toLowerCase();
+    final grouped = groupSongs();
 
-                  final kana =
-                      reading(row).toLowerCase();
+    // ==================================================
+    // 検索＋お気に入り
+    // ==================================================
 
-                  final matchesSearch =
-                      query.isEmpty ||
-                          name.contains(query) ||
-                          kana.contains(query);
+    final filteredSongs =
+        grouped.entries.where((entry) {
+      final history = entry.value;
 
-                  final matchesFavorite =
-                      !favoritesOnly ||
-                          widget.favorites.contains(
-                            songName(row),
-                          );
+      // 代表として最初の行の曲名を表示
+      final song = songName(history.first);
 
-                  return matchesSearch &&
-                      matchesFavorite;
-                })
-                .toList();
+      final matchesSearch =
+          query.isEmpty ||
+          song.toLowerCase().contains(query) ||
+          history.any(
+            (row) => songReading(row)
+                .toLowerCase()
+                .contains(query),
+          );
+
+      final matchesFavorite =
+          !favoritesOnly ||
+          widget.favorites.contains(song);
+
+      return matchesSearch &&
+          matchesFavorite;
+    }).toList();
+
+    // ==================================================
+    // 曲名順
+    // ==================================================
+
+    filteredSongs.sort(
+      (a, b) {
+        final songA =
+            songName(a.value.first);
+
+        final songB =
+            songName(b.value.first);
+
+        return songA.compareTo(songB);
+      },
+    );
 
     return Column(
       children: [
+        // ==================================================
+        // 検索
+        // ==================================================
+
         Padding(
           padding: const EdgeInsets.fromLTRB(
             20,
@@ -354,8 +396,7 @@ class _SongsPageState extends State<SongsPage> {
                   query.isNotEmpty
                       ? IconButton(
                           onPressed: () {
-                            searchController
-                                .clear();
+                            searchController.clear();
                           },
                           icon: const Icon(
                             Icons.clear,
@@ -383,16 +424,19 @@ class _SongsPageState extends State<SongsPage> {
           ),
         ),
 
+        // ==================================================
+        // 件数・お気に入りフィルター
+        // ==================================================
+
         Padding(
-          padding:
-              const EdgeInsets.symmetric(
+          padding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 4,
           ),
           child: Row(
             children: [
               Text(
-                '${songs.length}曲',
+                '${filteredSongs.length}曲',
                 style:
                     GoogleFonts.zenMaruGothic(
                   fontSize: 14,
@@ -426,9 +470,7 @@ class _SongsPageState extends State<SongsPage> {
                     fontWeight:
                         FontWeight.w600,
                     color:
-                        const Color(
-                      0xFF8061A8,
-                    ),
+                        const Color(0xFF8061A8),
                   ),
                 ),
               ),
@@ -436,8 +478,12 @@ class _SongsPageState extends State<SongsPage> {
           ),
         ),
 
+        // ==================================================
+        // 曲一覧
+        // ==================================================
+
         Expanded(
-          child: songs.isEmpty
+          child: filteredSongs.isEmpty
               ? Center(
                   child: Text(
                     '曲が見つかりませんでした',
@@ -469,20 +515,27 @@ class _SongsPageState extends State<SongsPage> {
                       18,
                       24,
                     ),
-                    itemCount: songs.length,
+                    itemCount:
+                        filteredSongs.length,
                     itemBuilder:
                         (context, index) {
-                      final row =
-                          songs[index];
+                      final entry =
+                          filteredSongs[index];
 
+                      final history =
+                          entry.value;
+
+                      // 同じ曲をまとめたグループの
+                      // 最初の曲名を表示名として使う
                       final song =
-                          songName(row);
+                          songName(history.first);
 
                       final isFavorite =
                           widget.favorites
                               .contains(song);
 
                       return Card(
+                        color: Colors.white,
                         elevation: 0,
                         margin:
                             const EdgeInsets.only(
@@ -502,6 +555,11 @@ class _SongsPageState extends State<SongsPage> {
                             horizontal: 16,
                             vertical: 6,
                           ),
+
+                          // ============================
+                          // アイコン
+                          // ============================
+
                           leading: Container(
                             width: 44,
                             height: 44,
@@ -523,13 +581,19 @@ class _SongsPageState extends State<SongsPage> {
                             child: const Icon(
                               Icons.music_note,
                               color:
-                                  Color(
-                                0xFF8061A8,
-                              ),
+                                  Color(0xFF8061A8),
                             ),
                           ),
+
+                          // ============================
+                          // 曲名＋歌唱回数
+                          // ============================
+
                           title: Text(
                             song,
+                            maxLines: 1,
+                            overflow:
+                                TextOverflow.ellipsis,
                             style:
                                 GoogleFonts
                                     .zenMaruGothic(
@@ -543,13 +607,46 @@ class _SongsPageState extends State<SongsPage> {
                                     ),
                             ),
                           ),
+
+                          subtitle: Padding(
+                            padding:
+                                const EdgeInsets
+                                    .only(
+                              top: 3,
+                            ),
+                            child: Text(
+                              '${history.length}回歌唱',
+                              style: GoogleFonts
+                                  .zenMaruGothic(
+                                fontSize: 12,
+                                fontWeight:
+                                    FontWeight.w600,
+                                color: isDark
+                                    ? const Color(
+                                        0xFFD8D0DC,
+                                      )
+                                    : const Color(
+                                        0xFF887494,
+                                      ),
+                              ),
+                            ),
+                          ),
+
+                          // ============================
+                          // お気に入り
+                          // ============================
+
                           trailing:
                               IconButton(
-                            onPressed: () {
-                              widget
+                            onPressed: () async {
+                              await widget
                                   .onToggleFavorite(
                                 song,
                               );
+
+                              if (mounted) {
+                                setState(() {});
+                              }
                             },
                             icon: Icon(
                               isFavorite
@@ -563,8 +660,16 @@ class _SongsPageState extends State<SongsPage> {
                                     ),
                             ),
                           ),
+
+                          // ============================
+                          // タップ → 履歴
+                          // ============================
+
                           onTap: () {
-                            showSongDetail(row);
+                            showSongDetail(
+                              song,
+                              history,
+                            );
                           },
                         ),
                       );
@@ -575,6 +680,8 @@ class _SongsPageState extends State<SongsPage> {
       ],
     );
   }
+  
+
 
   @override
   void dispose() {
@@ -583,14 +690,216 @@ class _SongsPageState extends State<SongsPage> {
     super.dispose();
   }
 }
+// ======================================================
+// コンパクト歌唱履歴カード
+// ======================================================
 
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String text;
+class _CompactSongHistoryCard extends StatelessWidget {
+  final String date;
+  final String streamTitle;
+  final String timestamp;
+  final String playUrl;
+  final String streamUrl;
+  final Future<void> Function(String url) onOpenUrl;
 
-  const _InfoRow({
-    required this.icon,
-    required this.text,
+  const _CompactSongHistoryCard({
+    required this.date,
+    required this.streamTitle,
+    required this.timestamp,
+    required this.playUrl,
+    required this.streamUrl,
+    required this.onOpenUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark =
+        Theme.of(context).brightness == Brightness.dark;
+
+    final mainColor = isDark
+        ? const Color(0xFFEBDDF2)
+        : const Color(0xFF654680);
+
+    final subColor = isDark
+        ? const Color(0xFFD8D0DC)
+        : const Color(0xFF887494);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_month,
+                size: 18,
+                color: isDark
+                    ? const Color(0xFFC7A9D8)
+                    : const Color(0xFF8061A8),
+              ),
+
+              const SizedBox(width: 7),
+
+              Text(
+                date,
+                style: GoogleFonts.zenMaruGothic(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: subColor,
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              Expanded(
+                child: Text(
+                  streamTitle.isEmpty
+                      ? '配信タイトルなし'
+                      : streamTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.zenMaruGothic(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: mainColor,
+                  ),
+                ),
+              ),
+
+              if (timestamp.isNotEmpty) ...[
+                const SizedBox(width: 8),
+
+                Icon(
+                  Icons.access_time,
+                  size: 16,
+                  color: subColor,
+                ),
+
+                const SizedBox(width: 4),
+
+                Text(
+                  timestamp,
+                  style: GoogleFonts.zenMaruGothic(
+                    fontSize: 11,
+                    color: subColor,
+                  ),
+                ),
+              ],
+            ],
+          ),
+
+          const SizedBox(height: 9),
+
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 38,
+                  child: ElevatedButton.icon(
+                    onPressed: playUrl.isEmpty
+                        ? null
+                        : () {
+                            onOpenUrl(playUrl);
+                          },
+                    icon: const Icon(
+                      Icons.play_arrow_rounded,
+                      size: 18,
+                    ),
+                    label: Text(
+                      'この歌唱を聴く',
+                      style: GoogleFonts.zenMaruGothic(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:
+                          const Color(0xFF8061A8),
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.zero,
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(11),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              if (streamUrl.isNotEmpty) ...[
+                const SizedBox(width: 7),
+
+                Expanded(
+                  child: SizedBox(
+                    height: 38,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        onOpenUrl(streamUrl);
+                      },
+                      icon: const Icon(
+                        Icons.open_in_new,
+                        size: 17,
+                      ),
+                      label: Text(
+                        '配信を見る',
+                        style: GoogleFonts.zenMaruGothic(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: isDark
+                            ? const Color(0xFFEBDDF2)
+                            : const Color(0xFF8061A8),
+                        side: BorderSide(
+                          color: isDark
+                              ? const Color(0xFF604B69)
+                              : const Color(0xFFD5C4E4),
+                        ),
+                        padding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(11),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ======================================================
+// 歌唱履歴カード
+// ======================================================
+
+class _HistoryCard extends StatelessWidget {
+  final String date;
+  final String streamTitle;
+  final String timestamp;
+  final String playUrl;
+  final String streamUrl;
+
+  final Future<void> Function(String url)
+      onOpenUrl;
+
+  const _HistoryCard({
+    required this.date,
+    required this.streamTitle,
+    required this.timestamp,
+    required this.playUrl,
+    required this.streamUrl,
+    required this.onOpenUrl,
   });
 
   @override
@@ -599,33 +908,222 @@ class _InfoRow extends StatelessWidget {
         Theme.of(context).brightness ==
             Brightness.dark;
 
-    return Padding(
-      padding:
+    return Container(
+      margin:
           const EdgeInsets.only(bottom: 12),
-      child: Row(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius:
+            BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark
+              ? const Color(0xFF493B50)
+              : const Color(0xFFE3D5EC),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            size: 19,
-            color: const Color(0xFF8061A8),
-          ),
+          // ==================================================
+          // 日付
+          // ==================================================
 
-          const SizedBox(width: 10),
-
-          Expanded(
-            child: Text(
-              text,
-              style:
-                  GoogleFonts.zenMaruGothic(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: isDark
-                    ? Colors.white
-                    : const Color(
-                        0xFF403747,
-                      ),
-              ),
+          if (date.isNotEmpty)
+            Row(
+              children: [
+                const Icon(
+                  Icons.calendar_month,
+                  size: 18,
+                  color: Color(0xFF8061A8),
+                ),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text(
+                    date,
+                    style: GoogleFonts
+                        .zenMaruGothic(
+                      fontSize: 13,
+                      fontWeight:
+                          FontWeight.bold,
+                      color: isDark
+                          ? const Color(
+                              0xFFEBDDF2,
+                            )
+                          : const Color(
+                              0xFF654680,
+                            ),
+                    ),
+                  ),
+                ),
+              ],
             ),
+
+          if (streamTitle.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.live_tv,
+                  size: 18,
+                  color: Color(0xFF8061A8),
+                ),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text(
+                    streamTitle,
+                    style: GoogleFonts
+                        .zenMaruGothic(
+                      fontSize: 13,
+                      fontWeight:
+                          FontWeight.w600,
+                      color: isDark
+                          ? Colors.white
+                          : const Color(
+                              0xFF403747,
+                            ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          if (timestamp.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(
+                  Icons.access_time,
+                  size: 17,
+                  color: Color(0xFF8061A8),
+                ),
+                const SizedBox(width: 7),
+                Text(
+                  timestamp,
+                  style: GoogleFonts
+                      .zenMaruGothic(
+                    fontSize: 12,
+                    color: isDark
+                        ? const Color(
+                            0xFFD8D0DC,
+                          )
+                        : const Color(
+                            0xFF887494,
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+
+          // ==================================================
+          // ボタン
+          // ==================================================
+
+          const SizedBox(height: 14),
+
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: playUrl.isEmpty
+                      ? null
+                      : () {
+                          onOpenUrl(playUrl);
+                        },
+                  icon: const Icon(
+                    Icons.play_arrow_rounded,
+                    size: 19,
+                  ),
+                  label: Text(
+                    'この曲を聴く',
+                    style: GoogleFonts
+                        .zenMaruGothic(
+                      fontSize: 12,
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+                  style:
+                      ElevatedButton.styleFrom(
+                    backgroundColor:
+                        const Color(0xFF8061A8),
+                    foregroundColor:
+                        Colors.white,
+                    padding:
+                        const EdgeInsets
+                            .symmetric(
+                      vertical: 12,
+                    ),
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(
+                        13,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed:
+                      streamUrl.isEmpty
+                          ? null
+                          : () {
+                              onOpenUrl(
+                                streamUrl,
+                              );
+                            },
+                  icon: const Icon(
+                    Icons.open_in_new,
+                    size: 17,
+                  ),
+                  label: Text(
+                    '配信を見る',
+                    style: GoogleFonts
+                        .zenMaruGothic(
+                      fontSize: 12,
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+                  style:
+                      OutlinedButton.styleFrom(
+                    foregroundColor:
+                        const Color(0xFF8061A8),
+                    side: BorderSide(
+                      color: isDark
+                          ? const Color(
+                              0xFF604B69,
+                            )
+                          : const Color(
+                              0xFFD5C4E4,
+                            ),
+                    ),
+                    padding:
+                        const EdgeInsets
+                            .symmetric(
+                      vertical: 12,
+                    ),
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(
+                        13,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
