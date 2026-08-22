@@ -518,7 +518,7 @@ class _MainPageState extends State<MainPage> {
           crossAxisAlignment:
               CrossAxisAlignment.start,
           children: [
-            
+
 
 
             Center(
@@ -952,6 +952,13 @@ class _MainPageState extends State<MainPage> {
                     Brightness.dark
                 ? const Color(0xFF493556)
                 : const Color(0xFFE4D5EC),
+                
+        labelTextStyle: WidgetStateProperty.all(
+  GoogleFonts.zenMaruGothic(
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+  ),
+),
 
         destinations: const [
 
@@ -1947,48 +1954,40 @@ class _SongsPageState
           ),
 
           Padding(
-            padding:
-                const EdgeInsets.symmetric(
-              horizontal: 18,
-            ),
-            child: TextField(
-              controller:
-                  searchController,
-              decoration:
-                  InputDecoration(
-                hintText:
-                    '曲名・ひらがなで検索',
-                prefixIcon:
-                    const Icon(
-                  Icons.search,
-                ),
-                suffixIcon:
-                    searchController
-                            .text
-                            .isNotEmpty
-                        ? IconButton(
-                            onPressed: () {
-                              searchController
-                                  .clear();
-                            },
-                            icon:
-                                const Icon(
-                              Icons.clear,
-                            ),
-                          )
-                        : null,
-                border:
-                    OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(
-                    16,
-                  ),
-                  borderSide:
-                      BorderSide.none,
-                ),
+  padding: const EdgeInsets.symmetric(
+    horizontal: 18,
+  ),
+  child: TextField(
+    controller: searchController,
+    decoration: InputDecoration(
+      hintText: '曲名で検索',
+      prefixIcon: const Icon(
+        Icons.search,
+      ),
+      suffixIcon: searchController.text.isNotEmpty
+          ? IconButton(
+              onPressed: () {
+                searchController.clear();
+                setState(() {});
+              },
+              icon: const Icon(
+                Icons.clear,
               ),
-            ),
-          ),
+            )
+          : null,
+      filled: true,
+      fillColor: isDark
+          ? const Color(0xFF2A2430)
+          : Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(
+          16,
+        ),
+        borderSide: BorderSide.none,
+      ),
+    ),
+  ),
+),
 
           const SizedBox(height: 8),
 
@@ -2034,10 +2033,9 @@ class _SongsPageState
                       );
 
                       return Card(
-                        color:
-                            Theme.of(
-                          context,
-                        ).cardColor,
+  color: isDark
+      ? const Color(0xFF2A2430)
+      : Colors.white,
                         elevation: 0,
                         margin:
                             const EdgeInsets
