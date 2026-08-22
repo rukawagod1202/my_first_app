@@ -362,67 +362,147 @@ setState(() {
     return counts;
   }
 
-  // ====================================================
+    // ====================================================
   // 最新の歌枠
+  // ★ スプレッドシートの入力順ではなく
+  // ★ C列の日付が一番新しい歌枠を表示
   // ★ 同じ配信は1件だけ
   // ====================================================
 
- List<String>? get latestStream {
-  if (rows.length <= 1) {
-    return null;
-  }
-
-  final data = rows.skip(1).toList();
-
-  // まず、一番新しい配信URLを探す
-  String latestUrl = '';
-
-  for (final row in data.reversed) {
-    final url = getStreamUrl(row);
-
-    if (url.isNotEmpty) {
-      latestUrl = url;
-      break;
-    }
-  }
-
-  if (latestUrl.isEmpty) {
-    return null;
-  }
-
-  // 同じ配信URLの中から
-  // サムネイルが入っている行を探す
-  for (final row in data.reversed) {
-    final url = getStreamUrl(row);
-
-    if (url != latestUrl) {
-      continue;
+  List<String>? get latestStream {
+    if (rows.length <= 1) {
+      return null;
     }
 
-    final thumbnail = getThumbnailUrl(row);
+    final data = rows.skip(1).where((row) {
+      return getStreamUrl(row).isNotEmpty &&
+          getDate(row).isNotEmpty;
+    }).toList();
 
-    if (thumbnail.isNotEmpty) {
-      return row;
+    if (data.isEmpty) {
+      return null;
     }
-  }
 
-  // サムネイルが見つからなかった場合は
-  // 最新の配信URLの行を返す
-  for (final row in data.reversed) {
-    final url = getStreamUrl(row);
+    // --------------------------------------------------
+    // 日付をDateTimeに変換
+    // --------------------------------------------------
 
-    if (url == latestUrl) {
-      return row;
+    DateTime? parseDate(String value) {
+      final normalized = value
+          .trim()
+          .replaceAll('/', '-')
+          .replaceAll('.', '-');
+
+      final match = RegExp(
+        r'^(\d{4})-(\d{1,2})-(\d{1,2})',
+      ).firstMatch(normalized);
+
+      if (match != null) {
+        final year = int.parse(match.group(1)!);
+        final month = int.parse(match.group(2)!);
+        final day = int.parse(match.group(3)!);
+
+        return DateTime(
+          year,
+          month,
+          day,
+        );
+      }
+
+      return DateTime.tryParse(normalized);
     }
-  }
 
-  return null;
-}
+    // --------------------------------------------------
+    // C列の日付が新しい順に並べる
+    // --------------------------------------------------
+
+    data.sort((a, b) {
+      final dateA = parseDate(getDate(a));
+      final dateB = parseDate(getDate(b));
+
+      if (dateA == null && dateB == null) {
+        return 0;
+      }
+
+      if (dateA == null) {
+        return 1;
+      }
+
+      if (dateB == null) {
+        return -1;
+      }
+
+      return dateB.compareTo(dateA);
+    });
+
+    // --------------------------------------------------
+    // 一番新しい日付の配信URLを取得
+    // --------------------------------------------------
+
+    final latestUrl = getStreamUrl(data.first);
+
+    if (latestUrl.isEmpty) {
+      return null;
+    }
+
+    final latestDate = parseDate(
+      getDate(data.first),
+    );
+
+    // --------------------------------------------------
+    // 最新の配信URL＋最新日付の中から
+    // サムネイルがある行を探す
+    // --------------------------------------------------
+
+    for (final row in data) {
+      if (getStreamUrl(row) != latestUrl) {
+        continue;
+      }
+
+      final rowDate = parseDate(
+        getDate(row),
+      );
+
+      if (latestDate != null &&
+          rowDate != null &&
+          rowDate != latestDate) {
+        continue;
+      }
+
+      final thumbnail = getThumbnailUrl(row);
+
+      if (thumbnail.isNotEmpty) {
+        return row;
+      }
+    }
+
+    // --------------------------------------------------
+    // サムネイルがない場合
+    // 最新の日付＋最新の配信URLの行を返す
+    // --------------------------------------------------
+
+    for (final row in data) {
+      if (getStreamUrl(row) != latestUrl) {
+        continue;
+      }
+
+      final rowDate = parseDate(
+        getDate(row),
+      );
+
+      if (latestDate == null ||
+          rowDate == latestDate) {
+        return row;
+      }
+    }
+
+    return data.first;
+  }
 
   // ====================================================
   // TOPページ
   // ====================================================
-
+  
   Widget buildTopPage() {
     final counts = getSongCounts();
 
