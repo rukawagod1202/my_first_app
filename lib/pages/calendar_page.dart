@@ -631,32 +631,13 @@ class _CalendarPageState extends State<CalendarPage> {
                       const SizedBox(height: 10),
 
                       // ==========================
-                      // 凡例
-                      // ==========================
+// 凡例
+// ==========================
 
-                      Wrap(
-                        alignment:
-                            WrapAlignment.center,
-                        spacing: 12,
-                        runSpacing: 4,
-                        children: [
-                          _Legend(
-                            color:
-                                Colors.pink.shade300,
-                            text: '日曜・祝日',
-                          ),
-                          _Legend(
-                            color:
-                                Colors.blue.shade300,
-                            text: '土曜',
-                          ),
-                          const _Legend(
-                            color:
-                                Color(0xFF8061A8),
-                            text: '歌枠あり',
-                          ),
-                        ],
-                      ),
+const _Legend(
+  color: Color(0xFF8061A8),
+  text: '歌枠あり',
+),
                     ],
                   ),
                 ),
